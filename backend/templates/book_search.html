@@ -1,0 +1,67 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}
+    Search Results 
+{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/book_search.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1>Results</h1>
+            {% for book in results %}
+                <div class="book">
+                    <img src="{{ book.image_link }}" alt="{{ book.title }}">
+                    <div class="book-details">
+                        <div class="top">
+                            <div class="book-title"><a href="{{ book.buy_link }}">{{ book.title }}</a></div>
+                            <form class="like-book-form" method="post" action="{% url 'users:toggle_book' %}" data-book-isbn="{{ book.isbn }}">
+                                {% csrf_token %}
+                                <input type="hidden" name="isbn" value="{{ book.isbn }}">
+                                <input type="hidden" name="title" value="{{ book.title }}">
+                                <input type="hidden" name="authors" value="{{ book.authors }}">
+                                <input type="hidden" name="image_link" value="{{ book.image_link }}">
+                                <input type="hidden" name="buy_link" value="{{ book.buy_link }}">
+                                <input type="hidden" name="genres" value="{{ book.genres }}">
+                                <button type="submit" class="like-button"><span class="star {% if book.isbn in liked_books %}liked{% endif %}">☆</span></button>
+                            </form>                            
+                        </div>
+                        <div class="book-authors">{{ book.authors }}</div>
+                        <div class="book-description">{{ book.description }}</div>
+                        <div class="book-genres">{{ book.genres }}</div>
+                        <div class="book-isbn"><span>ISBN: </span>{{ book.isbn }}</div>
+                    </div>                    
+                </div>
+            {% endfor %}
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function() {
+                $('.like-book-form').on('submit', function(event) {
+                    event.preventDefault();
+                    const form = $(this);
+                    $.ajax({
+                        type: 'POST',
+                        url: form.attr('action'),
+                        data: form.serialize(),
+                        success: function(response) {
+                            const star = form.find('.star');
+                            if (response.liked) {
+                                star.addClass('liked');
+                            } else {
+                                star.removeClass('liked');
+                            }
+                        },
+                        error: function(response) {
+                            if (response.status === 401) {
+                                window.location.href = '/users/login/';
+                            } else {
+                                alert('An error occurred. Please try again.');
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+{% endblock %}

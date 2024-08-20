@@ -1,0 +1,70 @@
+
+{% extends 'layout.html' %}
+
+{% load static %}
+
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/settings.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="settings-box">
+        <h1>Settings</h1>
+        <div class="settings-options">
+
+            <form class="form-with-validation" action="/users/change_name/" method="post">
+                {% csrf_token %}
+                <div class="change-name">
+                    <label for="name">Change your Name</label>
+                    <div class="input-group">
+                        {{ change_name_form.new_name }}
+                        <button class="form-submit">Submit</button>
+                    </div>
+                </div>
+            </form>
+
+            <form class="form-with-validation" action="/users/change_password/" method="post">
+                {% csrf_token %}
+                <div class="change-password">
+                    <label for="password">Change your Password</label>
+                    <div class="input-group">
+                        {{ change_password_form.new_password }} 
+                        <button class="form-submit">Submit</button>
+                    </div>
+                </div>
+            </form>
+
+            <form class="form-with-validation" action="/users/delete_account/" method="post">
+                {% csrf_token %}
+                <div class="delete-account">
+                    <label for="delete">Delete your Account</label>
+                    <div class="input-group">
+                        {{ delete_account_form.confirm }}
+                        <button class="form-submit" type="submit" onclick="return confirmDeletion()">Delete</button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var settingsImg = document.getElementById('settings-icon');
+            if (settingsImg) {
+                settingsImg.src = '{% static 'assets/settings-icon-filled.png' %}'; 
+            }
+        });
+        function confirmDeletion() {
+            return confirm("Are you sure you want to delete your account? This action cannot be undone.");
+        }
+    </script>
+{% endblock %}

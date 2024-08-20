@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}
+    Home | leadtheread.com
+{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+{% block content %}
+    <h1>We Lead the Read!</h1>
+    <h2>Can't remember the title of a book you read, or have a specific plot in mind? <br>
+        Just describe the plot below, and we'll help you find the book that best matches your description!<br>
+        <span class="wait-text">Good things take a while, expect a 2 minute wait...</span>
+    </h2>
+    <div class="search">
+        <form id="search-form" method="get" action="{% url 'book_search' %}">
+            <input type="text" id="book-search" name="book-search" placeholder="Book description..." class="book-search">
+            <select id="fiction-type" name="fiction-type">
+                <option value="fiction">Fiction</option>
+                <option value="non-fiction">Non-Fiction</option>
+            </select>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <div class="loading">
+        <img src="{% static 'assets/loading.gif' %}" alt="Loading...">
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('search-form');
+            const loading = document.querySelector('.loading');
+    
+            form.addEventListener('submit', function(event) {
+                loading.style.display = 'block';                
+            });
+            window.addEventListener('pageshow', function(event) {
+                if (event.persisted) {
+                    console.log("Page show, hiding loading GIF");
+                    loading.style.display = 'none';
+                }
+            });
+        });
+
+    </script>
+{% endblock %}

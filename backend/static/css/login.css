@@ -1,0 +1,91 @@
+.right .login_nav{
+    background-color: #541610;
+}
+
+.container {
+    padding-top: 0;
+    margin-top: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70vh;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 30%;
+    width: 100%;
+}
+.login-box h1{
+    font-size: 1em;
+}
+
+.form-with-validation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: x-large;
+    padding-top: 2rem;
+}
+.form-with-validation .helptext {
+    display: none;
+}
+.form-with-validation ul{
+    list-style-type: none;
+    color: #812c24;
+    font-size: large;
+    font-weight: 300;
+    text-decoration: underline;
+}
+.form-with-validation ul .errorlist .nonfield{
+    list-style-type: none;
+    color: #812c24;
+    font-size: large;
+    font-weight: 300;
+    text-decoration: underline;
+}
+.form-submit {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #812c24;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-submit:hover {
+    background-color: #812c24;
+}
+
+.sign-up {
+    font-size: x-large;
+    margin-top: 20px;
+}
+
+.sign-up a {
+    text-decoration: none;
+    color: #812c24;
+}
+
+.sign-up a:hover {
+    text-decoration: underline;
+}
+
+.forgot-password {
+    font-size: x-large;
+}
+
+.forgot-password a {
+    text-decoration: none;
+    color: #812c24;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+}

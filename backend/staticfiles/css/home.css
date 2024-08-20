@@ -1,0 +1,113 @@
+h1{
+    padding-top: 1em;
+    font-size: 1em;
+    text-align: center;
+    color: black;
+    font-weight:900;
+
+    color: #6D3A32;
+}
+h2{
+    padding-top: 1.5em;
+    font-size: .6em;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.829);
+
+    color: #4B2E2B;
+}
+.wait-text{
+    text-decoration: underline;
+
+    color: #4B2E2B;
+}
+nav .books{
+    text-underline-offset: 39px;
+    text-decoration: underline;
+    text-decoration-thickness: 8px;
+    color:#541610;
+}
+
+.search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; 
+    height: 35vh; 
+    padding-right: 0;
+    margin-right: 0;
+    padding-top: 1em;
+}
+.search form {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+.book-search {
+    width: 50%;
+    padding: 15px 20px;
+    font-size: 18px;
+    border: 1px solid #B67146;
+    border-radius: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+    transition: box-shadow 0.3s ease-in-out;
+}
+.book-search:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.book-search:focus {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+select {
+    width: 8%;
+    padding-left: 10px;
+    font-size: 16px;
+    border: 1px solid #B67146;
+    border-radius: 4px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3E%3Cpath fill='%23999' d='M2 0L0 2h4zM2 5l2-2H0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+    transition: box-shadow 0.3s ease-in-out;
+}
+select:hover,
+select:focus{
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+.search button {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    padding: 10px 20px;
+    font-size: 1.3rem;
+    border: none;
+    border-radius: 25px;
+    background-color: #812c24;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+.search button:hover {
+    background-color: #642722;
+}
+
+input[type="text"] {
+    margin-right: 10px; 
+}
+.loading {
+    display: none;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0;
+    margin: 0; 
+    /* z-index: 1000;
+    top: 5%;  */
+}

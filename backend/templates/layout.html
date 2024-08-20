@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}
+            
+        {% endblock %}
+    </title>
+    <link rel="stylesheet" href="{% static '/css/style.css' %}">
+
+
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static '/assets/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static '/assets/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static '/assets/favicon-16x16.png'%}">
+    <link rel="manifest" href="{% static '/assets/site.webmanifest'%}">
+
+    {% block extra_css %}{% endblock %}
+
+</head>
+<body>
+    <nav>
+        <div class="left">
+            <div class="books">
+                <a href="/">
+                    <span>
+                        Books
+                    </span>
+                </a> 
+            </div>
+        </div>
+        <div class="center">
+            <a href="/">
+                <img src="{% static 'assets/leadtheread-logo.png' %}" alt="img">
+            </a>
+        </div>
+        <div class="right">
+            {% if user.is_authenticated %}
+                <div class="user_home">
+                    <a href="{% url 'users:user_home' %}">
+                        Home
+                    </a>
+                </div>
+                <div class="settings_nav">
+                    <a href="{% url 'users:settings' %}">
+                        <img src="{% static 'assets/settings-icon.png' %}" alt="settings icon" id="settings-icon">
+                    </a>
+                </div>
+                <form action="{% url 'users:logout' %}" method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button">Logout</button>
+                </form>          
+                
+            {% else %}
+                <div class="login_nav">
+                    <a href="{% url 'users:login' %}">
+                        <span>
+                            Login
+                        </span> 
+                    </a>
+                </div>
+                <div class="register_nav">
+                    <a href="{% url 'users:register' %}">
+                        <span>
+                            Register
+                        </span>
+                    </a>
+                </div>
+                
+            {% endif %}
+        </div>
+    </nav>
+    <main>
+        {% block content %}
+        {% endblock %}
+        <script>
+        const currentUrl = window.location.pathname;
+        const settingsUrl = '/users/settings/'; 
+
+        if (currentUrl !== settingsUrl) {
+            const settingsImg = document.getElementById('settings-icon');
+            settingsImg.addEventListener('mouseenter', () => {
+                settingsImg.src = '{% static 'assets/settings-icon-filled.png' %}'; 
+            });
+
+            settingsImg.addEventListener('mouseleave', () => {
+                settingsImg.src = '{% static 'assets/settings-icon.png' %}';
+            });
+        }
+        </script>
+    </main>
+</body>
+</html>

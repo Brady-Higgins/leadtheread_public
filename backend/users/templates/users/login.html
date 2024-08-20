@@ -1,0 +1,37 @@
+
+{% extends 'layout.html' %}
+
+{% load static %}
+
+{% block title %}
+    User Login
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="login-box">
+        <h1>Login</h1>
+        <form class="form-with-validation" action="/users/login/" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <button class="form-submit">Submit</button>
+            <div class="sign-up">
+                Don't Have an Account?
+                <a href="{% url 'users:register' %}">
+                    <span>Sign up here</span> 
+                </a>
+            </div>
+            <div class="forgot-password">
+                Forgot your Password?
+                <a href="{% url 'users:reset_password' %}">
+                    <span>Reset Here</span> 
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

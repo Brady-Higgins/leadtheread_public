@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}
+    Registration Pending 
+{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/registration_pending.css' %}">
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="pending-box">
+            <h1>Check your email and click the link we sent!</h1>
+            <img src="{% static 'assets/loading-white.gif' %}" alt="Loading...">
+        </div>
+    </div>
+{% endblock %}
