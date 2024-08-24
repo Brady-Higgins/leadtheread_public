@@ -84,3 +84,9 @@
 .settings-options .delete-account{
     align-items: center;
 }
+@media (max-width: 580px) {
+    .settings-box{
+	margin-top: 2em;
+        max-width: 90%;
+    }
+}

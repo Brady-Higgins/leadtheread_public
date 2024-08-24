@@ -89,3 +89,9 @@
 .forgot-password a:hover {
     text-decoration: underline;
 }
+@media (max-width: 580px) {
+    .login-box{
+	margin-top: 2em;
+        max-width: 90%;
+    }
+}

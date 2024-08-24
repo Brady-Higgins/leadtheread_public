@@ -189,3 +189,60 @@ span {
     text-align: center;
     width: 100%; 
 }
+@media (max-width: 580px) {
+    nav .books{
+        display: none;
+    }
+    .container {
+        flex-direction: column; /* Stack the columns vertically */
+        width: 90vw;
+        height: auto; /* Allow height to adjust based on content */
+        padding: 2vw;
+    }
+
+    .left-user-home, .right-user-home {
+        margin-left: 0; /* Remove left margin on mobile */
+        margin-right: 0; /* Remove any right margin */
+        width: 100%; /* Make each section full width */
+    }
+
+    .left-user-home h1, .right-user-home h1 {
+        font-size: 1.2em; /* Adjust the font size for headings */
+        margin-top: 0.5rem;
+    }
+
+    .liked-books {
+        height: auto; /* Allow the liked-books section to adjust height */
+        max-height: none; /* Remove the max-height */
+        padding: 1rem;
+        width: 100%; /* Full width */
+    }
+
+    .book {
+        flex-direction: column; /* Stack book details below the image */
+        align-items: center;
+        width: 100%; /* Make the book container full width */
+    }
+
+    .book img {
+        margin-right: 0; /* Remove margin on the right */
+        margin-bottom: 10px; /* Add space below the image */
+        max-width: 100px; /* Adjust image size */
+    }
+
+    .book-details {
+        width: 100%; /* Full width for book details */
+        text-align: center; /* Center the text */
+        font-size: medium; /* Adjust font size for readability */
+    }
+
+    .top-genres {
+        width: 100%; /* Make the top-genres container full width */
+        font-size: 2.5rem; /* Adjust font size */
+        padding: 1rem; /* Adjust padding */
+    }
+
+    .top-genres li {
+        font-size: 2rem; /* Adjust font size for list items */
+    }
+}

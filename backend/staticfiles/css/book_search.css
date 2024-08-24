@@ -89,3 +89,55 @@ h1 {
 span {
     font-weight:300;
 }
+@media (max-width: 580px) {
+    .book {
+        flex-direction: column; /* Stack image and details vertically */
+        align-items: center; /* Center align the items */
+        width: 100%; /* Ensure the book container takes full width */
+        padding: 10px; /* Adjust padding for smaller screens */
+    }
+
+    .book img {
+        max-width: 100px; /* Reduce the image size on mobile */
+        margin-bottom: 10px; /* Add space below the image */
+    }
+
+    .book-details {
+        width: 100%; /* Full width for book details */
+        text-align: left; /* Align text to the left */
+        font-size: large; /* Adjust font size for readability */
+    }
+
+    .top {
+        width: 100%; /* Ensure the top section takes full width */
+        display: flex;
+        flex-direction: column; /* Stack title and like button */
+        align-items: flex-start; /* Align items to the left */
+    }
+
+    .book-title {
+        font-size: 1.5em; /* Adjust font size */
+        margin-bottom: 10px; /* Add margin below the title */
+    }
+
+    .like-button {
+        font-size: 24px; /* Adjust the size of the like button */
+        margin-top: 10px; /* Add margin above the like button */
+        align-self: flex-start; /* Align the like button to the left */
+    }
+
+    .book-authors, .book-description, .book-isbn, .book-genres {
+        text-align: left; /* Align text elements to the left */
+        font-size: small; /* Adjust font size for readability */
+    }
+
+    .book-description {
+        overflow-wrap: break-word; /* Ensure long descriptions break and wrap */
+        margin-top: 10px; /* Add space above the description */
+    }
+
+    .container {
+        padding: 10px; /* Adjust container padding */
+    }
+}
+

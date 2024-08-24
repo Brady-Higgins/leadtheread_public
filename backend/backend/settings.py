@@ -28,9 +28,9 @@ load_dotenv(dotenv_path=dotenv_path, override=True)
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['leadtheread.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['leadtheread.com']
 
 
 # Application definition
@@ -145,8 +145,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = '/home/ubuntu/leadtheread/backend/staticfiles/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

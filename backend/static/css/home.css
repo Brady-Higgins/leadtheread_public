@@ -111,3 +111,34 @@ input[type="text"] {
     /* z-index: 1000;
     top: 5%;  */
 }
+@media (max-width: 580px) {
+    h1 {
+        font-size: .9em;
+    }
+    h2 {
+        font-size: .5em;
+    }
+    .search {
+        flex-direction: column; /* Stack elements vertically on phones */
+    }
+    .search form {
+        width: 100%;
+        flex-direction: column; /* Stack form elements vertically */
+    }
+    .book-search {
+        width: 100%; /* Full width for the search input */
+        margin-bottom: 10px; /* Space below the search input */
+    }
+    select {
+        width: 30%; /* Set width for the select dropdown */
+        margin-bottom: 20px; /* Space below the dropdown */
+        height: 3.2em;
+        margin: 0 auto; /* Center the select element */
+    }
+    .search button {
+        width: 30%; /* Set width for the buttons */
+        margin-left: 0; /* Remove left margin */
+        margin: 0 auto; /* Center the button */
+        margin-top: .5em;
+    }
+}

@@ -86,3 +86,44 @@ nav img {
     background-color: #541610;
 }
 
+@media (max-width: 580px) {
+    nav .books {
+        display: none; /* Hide the "Books" link on small screens */
+    }
+
+    .center {
+        flex-grow: 1;
+        justify-content: center;
+        position: static; /* Remove absolute positioning */
+        transform: none;  /* Remove the transform to center with flexbox */
+    }
+
+    nav img {
+        max-height: 70px; /* Slightly reduce the logo size */
+        height: auto;
+        width: auto;
+        margin: 0 auto; /* Center the logo within the flexbox */
+    }
+
+    .right {
+        flex-wrap: nowrap; /* Prevent items from wrapping */
+        justify-content: flex-end;
+    }
+
+    .right .register_nav,
+    .right .login_nav,
+    .right .user_home,
+    .logout-button {
+        font-size: 0.8rem; /* Reduce font size */
+        padding: 0 5px; /* Reduce padding */
+    }
+
+    nav .settings_nav img {
+        width: 1.4em;
+        height: 1.4em; /* Adjust icon size */
+    }
+
+    .right div {
+        margin-right: 5px; /* Adjust margin for spacing */
+    }
+}
