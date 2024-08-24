@@ -287,16 +287,21 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
 
     # Extract book titles, descriptions, and image link from the results
     # Add the plot summary from wiki
-    google_books = search_books_by_query(query,vector_top_k)    
+    pos = extract(query)
+    if len(pos) > 3:
+        pos_terms = 3
+    else:
+        pos_terms = len(pos)
+    search_items = 25 - (len(pos_terms) * 5) 
+    google_books = search_books_by_query(query,search_items)    
     
     if google_books == None:
         return [{"title": "Error Retrieving Books"}]
     google_books = google_books.get('items',[])
     titles = []
-    for item in google_books:
-        
+    for item in google_books:        
         titles.append(item.get('volumeInfo').get('title'))
-    pos = extract(query)
+    
     i = 0
     all_key_query = ""
     for key in pos:
