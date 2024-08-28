@@ -292,7 +292,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         pos_terms = 3
     else:
         pos_terms = len(pos)
-    search_items = 25 - (len(pos_terms) * 5) 
+    search_items = 25 - (pos_terms * 5) 
     google_books = search_books_by_query(query,search_items)    
     
     if google_books == None:
@@ -346,8 +346,9 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         # no isbn was listed
         if id_type == "None":
             continue
-
         title = volume_info.get('title', 'No title')
+        if title=="CannaCorn":
+            continue
         authors_info = volume_info.get('authors', 'Unknown Author')
         authors = ""
         for author in authors_info:
@@ -398,7 +399,6 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
                 elif distance <= 3:
                     relevancy_score += 2
                     awards_copy.remove(key_word)
-        
         page_genre = ""
         genres = normalized_genres.get("genres")
         if len(genres) < 8:
