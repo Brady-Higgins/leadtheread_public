@@ -21,13 +21,17 @@ from datasketch import MinHash, MinHashLSH
 
 def search_books_isbn(isbn):
     base_url = "https://www.googleapis.com/books/v1/volumes" 
-
-
     current_directory = Path.cwd()
     dotenv_path = current_directory.parent / '.env'
     load_dotenv(dotenv_path=dotenv_path, override=True)
-    
-    params = {'q': f'isbn:{str(isbn)}','key': os.getenv('GOOGLE_API_KEY')}
+
+    params = {
+        'q': f'isbn:{str(isbn)}',
+        'maxResults': 1,
+        'printType':'books',
+        'key': os.getenv('GOOGLE_API_KEY'),
+        'projection': 'full'
+    }    
     response = requests.get(base_url, params=params)   
     if response.status_code == 200:
         # Parse the JSON response
@@ -119,7 +123,6 @@ def search_books_by_query(query,top_k,key_words={}):
         'printType':'books',
         'key': os.getenv('GOOGLE_API_KEY')
     }    
-    request_url = requests.Request('GET', base_url, params=params).prepare().url
     response = requests.get(base_url, params=params)    
     if response.status_code == 200:
         # Parse the JSON response
@@ -364,22 +367,6 @@ def init_minhash():
     potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
     potter_minhash = create_minhash(potter_shingle)
     lsh.insert("9780545790352",potter_minhash,check_duplication=False)
-
-    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
-    potter_minhash = create_minhash(potter_shingle)
-    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
-
-    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
-    potter_minhash = create_minhash(potter_shingle)
-    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
-
-    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
-    potter_minhash = create_minhash(potter_shingle)
-    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
-
-    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
-    potter_minhash = create_minhash(potter_shingle)
-    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
     save_minhash(lsh)
 
 # Plot Vectorization with Crude Search Ranking Algorithm (PVCSRA)
@@ -548,6 +535,8 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         buy_link = volume_info.get("canonicalVolumeLink", "https://books.google.com/" )
         if images != 'No image link':
             image_link = images.get('smallThumbnail')
+        else:
+            image_link = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png'
 
         #Score
         if wiki_description:
@@ -581,5 +570,4 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     return final_result  
 
 if __name__=="__main__":
-    init_minhash()
-    print(search_minhash("magic boy and friends go to hogwarts and fights voldemort"))
+    print(search_books_isbn("9781439550410"))
