@@ -402,7 +402,11 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         pos_terms = 3
     else:
         pos_terms = len(pos)
+<<<<<<< HEAD
     search_items = 30 - (pos_terms * 5) 
+=======
+    search_items = 25 - (pos_terms * 5) 
+>>>>>>> 74ed4d5ca2b5646d5e2bed44e1db83d170ba61d6
     google_books = search_books_by_query(query,search_items)    
     
     if google_books == None:
@@ -479,8 +483,12 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         if id_type == "None":
             continue
         title = volume_info.get('title', 'No title')
+<<<<<<< HEAD
         
         if title=="CannaCorn" or title == "Psychic Self-defense":
+=======
+        if title=="CannaCorn":
+>>>>>>> 74ed4d5ca2b5646d5e2bed44e1db83d170ba61d6
             continue
         authors_info = volume_info.get('authors', 'Unknown Author')
         authors = ""
