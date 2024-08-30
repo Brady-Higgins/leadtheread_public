@@ -15,6 +15,9 @@ from django.contrib.auth.tokens import default_token_generator
 import secrets
 import string
 from collections import Counter
+from backend import utils
+
+
 
 
 def register_view(request):
@@ -74,7 +77,6 @@ def reset_password_view(request):
                 reset_link = request.build_absolute_uri(
                     reverse("users:confirm_password_reset", kwargs={"uidb64": uid, "token": token})
                 )
-                print(reset_link)
                 
                 subject = "Password Reset Request"
                 message = (
@@ -173,7 +175,8 @@ def settings_view(request):
         'change_password_form': change_password_form,
         'delete_account_form': delete_account_form,
     })
-    
+
+
 # Handles login required itself
 def toggle_book(request):
     if not request.user.is_authenticated:
@@ -191,17 +194,24 @@ def toggle_book(request):
                 isbn=isbn,
                 defaults={'title': title, 'authors': authors, 'image_link': image_link, 'buy_link': buy_link,'genres':genres}
             )
- 
 
         if request.user in book.users.all():
             book.users.remove(request.user)
-            if not book.users.exists():
-                book.delete()
+            # removed so query to liked book will always exist
+            # if not book.users.exists():
+            #     book.delete()
             liked = False
         else:
+            # Book is being liked
             book.users.add(request.user)
             liked = True
-        
+
+        #minhash      
+        # add a sucess pair (query_vector to isbn)
+        # Example: "Magic boy goes to hogwarts" -> vectorization & PCA -> [368x] : "Harry Potter and The Sorcerors Stone"
+        if liked:
+            query = request.POST.get("query")
+            utils.update_minhash(key=isbn,query=query)
         return JsonResponse({'message': 'success', 'liked': liked}, status=200)
     return JsonResponse({'error': 'Invalid request'}, status=400)
 

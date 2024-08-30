@@ -1,4 +1,5 @@
 .history/
+init_minhash_vals.py
 
 
 # Byte-compiled / optimized / DLL files
@@ -127,6 +128,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+venv2/
 env/
 venv/
 ENV/

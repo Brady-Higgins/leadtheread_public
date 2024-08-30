@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from .utils import deep_search_books
+from .utils import deep_search_books, update_minhash, load_minhash
+from django.contrib.auth.decorators import login_required
 
-import time
+
 
 def homepage(request):
     return render(request, 'home.html')
@@ -16,10 +17,11 @@ def book_search(request):
         fic_bool = 1
     else:
         fic_bool = 0
-    resp = deep_search_books(query,12,8,fic_bool)
+    resp = deep_search_books(query,12,10,fic_bool)
     liked = []
     if request.user.is_authenticated:
         liked_books = request.user.liked_books.all()
         for book in liked_books:
             liked.append(book.isbn)
-    return render(request, 'book_search.html', {'results':resp, 'liked_books':liked})
+    return render(request, 'book_search.html', {'results':resp, 'liked_books':liked,'query':query})
+

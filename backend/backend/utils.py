@@ -1,3 +1,4 @@
+# Plot Vectorization with Crude Search Ranking Algorithm
 import requests
 import spacy
 import numpy as np
@@ -10,7 +11,13 @@ from dotenv import load_dotenv
 from pathlib import Path
 import Levenshtein
 import time
+import pickle
+from nltk.corpus import wordnet
+from itertools import product
 
+#Reduced Query Hash Approximation
+from sklearn.decomposition import TruncatedSVD
+from datasketch import MinHash, MinHashLSH
 
 def search_books_isbn(isbn):
     base_url = "https://www.googleapis.com/books/v1/volumes" 
@@ -20,7 +27,7 @@ def search_books_isbn(isbn):
     dotenv_path = current_directory.parent / '.env'
     load_dotenv(dotenv_path=dotenv_path, override=True)
     
-    params = {'q': f'isbn:{isbn}','key': os.getenv('GOOGLE_API_KEY')}
+    params = {'q': f'isbn:{str(isbn)}','key': os.getenv('GOOGLE_API_KEY')}
     response = requests.get(base_url, params=params)   
     if response.status_code == 200:
         # Parse the JSON response
@@ -168,6 +175,29 @@ def clean_title(title):
         return title.split("(")[0]
     return title
 
+def openlibrary_search_isbn(isbn,top_k=1):
+    '''
+    isbn (string) : number identifier, it recognizes both isbn10 and isbn13
+    top_k (int) : number of books to return
+    '''
+    query =  "isbn: " + str(isbn)
+    base_url = "https://openlibrary.org/search.json"    
+
+    params = {
+        'q': query,
+        'limit': top_k,
+    }    
+    response = requests.get(base_url, params=params)    
+    if response.status_code == 200:
+        simplified_resp = {"subjects":None,"key_words":None,"fiction":None,"found":False}
+        data = response.json()
+        if data.get("numFound") == 0:
+            return simplified_resp
+        else:
+            simplified_resp['found'] = True
+        hit = data.get("docs")[0]
+
+
 def openlibrary_keys(isbn,top_k=1):
     '''
     isbn (string) : number identifier, it recognizes both isbn10 and isbn13
@@ -182,7 +212,7 @@ def openlibrary_keys(isbn,top_k=1):
     }    
     response = requests.get(base_url, params=params)    
     if response.status_code == 200:
-        simplified_resp = {"subjects":None,"key_words":None,"fiction":None,"found":False}
+        simplified_resp = {"subjects":[],"key_words":[],"fiction":[],"found":[]}
         data = response.json()
         if data.get("numFound") == 0:
             return simplified_resp
@@ -201,8 +231,9 @@ def openlibrary_keys(isbn,top_k=1):
         else:
             #Checks all subjects that may contain the word fiction e.g. Young Adult Fiction
             nonfiction_list = ['nonfiction', 'non fiction', 'non-fiction']
+            common_fiction_list = ['fantasy','magic','fiction']
             for genre in simplified_resp.get("subjects"):
-                if 'fiction' in genre.lower() and not genre.lower() in nonfiction_list:
+                if genre.lower() in common_fiction_list and not genre.lower() in nonfiction_list:
                     simplified_resp["fiction"] = True
                     break
 
@@ -228,6 +259,8 @@ def genre_generics(genres):
     genres (string[]) : list of genres
     return normalaized result
     '''
+    if genres == None:
+        return {"genres":[],"awards":[]}
     genre_set = {
     'action', 'adventure', 'mystery', 'thriller', 'suspense', 'fantasy', 'science', 'fiction', 
     'horror', 'romance', 'historical', 'drama', 'comedy', 'satire', 'tragedy', 'dystopian', 
@@ -273,6 +306,83 @@ def genre_generics(genres):
                 break
     return normalized_genres
 
+#Reduced Query MinHash LSH Approximation (QRAML)
+
+def create_minhash(shingles):
+    m = MinHash(num_perm=100)
+    for shingle in shingles:
+        m.update(shingle.encode('utf8'))
+    return m
+
+def shingle(text, n=1):
+    tokens = text.split()
+    return set([" ".join(tokens[i:i+n]) for i in range(len(tokens) - n + 1)])
+
+def load_minhash():
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    file_path = os.path.join(root_dir, 'lsh_index.pkl')
+    try:
+        with open(file_path, 'rb') as f:
+            lsh_loaded = pickle.load(f)
+        return lsh_loaded
+    except FileNotFoundError:
+        print("Pickle file not found.")
+        return None
+    except Exception as e:
+        print(f"Error loading MinHashLSH: {e}")
+        return None
+
+def update_minhash( key, query):
+    lsh = load_minhash()
+    query_shingle = shingle(query)
+    query_minhash = create_minhash(query_shingle)
+    lsh.insert(key, query_minhash,check_duplication=False)
+    save_minhash(lsh) 
+
+def save_minhash(lsh):
+    # lsh : minhashLsh obj
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    file_path = os.path.join(root_dir, 'lsh_index.pkl')
+    try:
+        with open(file_path, 'wb') as f:
+            pickle.dump(lsh, f)
+        print("MinHashLSH saved successfully.")
+    except Exception as e:
+        print(f"Error saving MinHashLSH: {e}")
+
+def search_minhash(query):
+    lsh = load_minhash()
+    query_shingle = shingle(query)
+    query_minhash = create_minhash(query_shingle)
+    similar_results = lsh.query(query_minhash)
+    if len(similar_results) > 5:
+        return similar_results[:4]
+    return similar_results
+
+def init_minhash():
+    lsh = MinHashLSH(threshold=0.25, num_perm=100)
+    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
+    potter_minhash = create_minhash(potter_shingle)
+    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
+
+    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
+    potter_minhash = create_minhash(potter_shingle)
+    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
+
+    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
+    potter_minhash = create_minhash(potter_shingle)
+    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
+
+    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
+    potter_minhash = create_minhash(potter_shingle)
+    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
+
+    potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
+    potter_minhash = create_minhash(potter_shingle)
+    lsh.insert("9780545790352",potter_minhash,check_duplication=False)
+    save_minhash(lsh)
+
+# Plot Vectorization with Crude Search Ranking Algorithm (PVCSRA)
 def deep_search_books(query,vector_top_k,result_top_k,fiction):
     '''
     1. Isolate key words from query
@@ -292,7 +402,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         pos_terms = 3
     else:
         pos_terms = len(pos)
-    search_items = 25 - (len(pos_terms) * 5) 
+    search_items = 30 - (pos_terms * 5) 
     google_books = search_books_by_query(query,search_items)    
     
     if google_books == None:
@@ -301,14 +411,16 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     titles = []
     for item in google_books:        
         titles.append(item.get('volumeInfo').get('title'))
+        item.get("volumeInfo")["score"] = 0
     
     i = 0
     all_key_query = ""
     for key in pos:
         if i < 3:
-            book_search_on_key = search_books_by_query(key,5)
+            book_search_on_key = search_books_by_query(key,10)
             for item in book_search_on_key.get('items', []):
                 if item.get('volumeInfo').get('title') not in titles:
+                    item.get("volumeInfo")["score"] = 0
                     google_books.append(item)
                     titles.append(item.get('volumeInfo').get('title'))
         all_key_query += key + " "
@@ -316,6 +428,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     book_search_on_key = search_books_by_query(all_key_query,5)
     for item in book_search_on_key.get('items', []):
                 if item.get('volumeInfo').get('title') not in titles:
+                    item.get("volumeInfo")["score"] = 0
                     google_books.append(item)
                     titles.append(item.get('volumeInfo').get('title'))
     books = []
@@ -326,7 +439,26 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     # 3. Book must match fiction/nonfiction search criteria
     i = 0
     # Get vector score, add word matches to score, add award score, ask user about key words
+
+    # Get minhash similiar books
     query_vector = unweighted_vector_embedding(query)
+    similiar_query_successes = search_minhash(query)
+    for isbn in similiar_query_successes:
+        book = search_books_isbn(isbn)
+        if book.get("totalItems") == 0:
+            continue
+        item = book.get("items")
+        if item[0].get("volumeInfo").get("title") not in titles:
+            item[0].get("volumeInfo")["score"] = 0
+            google_books.append(item[0])
+        else:
+            #Give big boost
+            for item in google_books:
+                title = item.get('volumeInfo', {}).get("title")
+                item.get("volumeInfo")["score"] = 30 
+        # title = openlibrary_search_isbn(isbn)
+    
+
     for item in google_books:       
         volume_info = item.get('volumeInfo', {})
         industry_identifier = volume_info.get('industryIdentifiers', 'No ISBN Listed')
@@ -346,8 +478,10 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         # no isbn was listed
         if id_type == "None":
             continue
-
         title = volume_info.get('title', 'No title')
+        
+        if title=="CannaCorn" or title == "Psychic Self-defense":
+            continue
         authors_info = volume_info.get('authors', 'Unknown Author')
         authors = ""
         for author in authors_info:
@@ -359,16 +493,17 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         wiki_description = get_wiki_plot(title,0,0)
 
         # Returns key words from openlibrary
-        relevancy_score = 0
+        relevancy_score = item.get("volumeInfo").get("score")
         key_words = openlibrary_keys(isbn)
         # if the book doesn't exist on open books punish
         if not key_words.get("found"):
             relevancy_score -= 10
         #check if fiction is in key else remove book
-        if key_words.get("fiction") != fiction:
+        if key_words.get("fiction") != fiction and key_words.get("found"):
             continue
         #check for matching key words such as character names
         normalized_genres = genre_generics(key_words.get("subjects"))
+
         key_word_copy = key_words.get("key_words").copy()
         genres_copy = normalized_genres.get("genres").copy()
         awards_copy = normalized_genres.get("awards").copy()
@@ -398,7 +533,6 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
                 elif distance <= 3:
                     relevancy_score += 2
                     awards_copy.remove(key_word)
-        
         page_genre = ""
         genres = normalized_genres.get("genres")
         if len(genres) < 8:
@@ -423,7 +557,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         else:
             book_vector = unweighted_vector_embedding(google_description)
             vector_score = query_vector.similarity(book_vector)            
-            vector_score *= 100
+            vector_score *= 80
 
         relevancy_score += vector_score
 
@@ -446,3 +580,6 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
             increm +=1    
     return final_result  
 
+if __name__=="__main__":
+    init_minhash()
+    print(search_minhash("magic boy and friends go to hogwarts and fights voldemort"))

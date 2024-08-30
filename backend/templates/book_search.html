@@ -23,6 +23,7 @@
                                 <input type="hidden" name="image_link" value="{{ book.image_link }}">
                                 <input type="hidden" name="buy_link" value="{{ book.buy_link }}">
                                 <input type="hidden" name="genres" value="{{ book.genres }}">
+                                <input type="hidden" name="query" value="{{ query }}">
                                 <button type="submit" class="like-button"><span class="star {% if book.isbn in liked_books %}liked{% endif %}">☆</span></button>
                             </form>                            
                         </div>
