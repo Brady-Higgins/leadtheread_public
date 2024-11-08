@@ -403,7 +403,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     i = 0
     all_key_query = ""
     for key in pos:
-        if i < 3:
+        if i < 1:
             book_search_on_key = search_books_by_query(key,10)
             for item in book_search_on_key.get('items', []):
                 if item.get('volumeInfo').get('title') not in titles:
@@ -419,7 +419,6 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
                     google_books.append(item)
                     titles.append(item.get('volumeInfo').get('title'))
     books = []
-    
     # Criteria to be added to search
     # 1. Book must contain an ISBN
     # 2. Book must exist in the openlibrary database
@@ -428,7 +427,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     # Get vector score, add word matches to score, add award score, ask user about key words
 
     # Get minhash similiar books
-    query_vector = unweighted_vector_embedding(query)
+    # query_vector = unweighted_vector_embedding(query)
     similiar_query_successes = search_minhash(query)
     for isbn in similiar_query_successes:
         book = search_books_isbn(isbn)
@@ -477,7 +476,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         google_description = volume_info.get('description', 'No description available')
 
         # Returns wiki description based on title 
-        wiki_description = get_wiki_plot(title,0,0)
+        # wiki_description = get_wiki_plot(title,0,0)
 
         # Returns key words from openlibrary
         relevancy_score = item.get("volumeInfo").get("score")
@@ -496,32 +495,32 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         key_word_copy = key_words.get("key_words").copy()
         genres_copy = normalized_genres.get("genres").copy()
         awards_copy = normalized_genres.get("awards").copy()
-        for word in query:
-            for key_word in key_word_copy:
-                # Gets relative string difference with 1 point for every difference (capitalization, letter distance, etc.)
-                distance = Levenshtein.distance(word,key_word)
-                if distance == 0:
-                    relevancy_score += 10
-                    key_word_copy.remove(key_word)
-                elif distance <= 3:
-                    relevancy_score += 5
-                    key_word_copy.remove(key_word)
-            for key_word in genres_copy:
-                distance = Levenshtein.distance(word,key_word)
-                if distance == 0:
-                    relevancy_score += 5
-                    genres_copy.remove(key_word)
-                elif distance <= 3:
-                    relevancy_score += 2
-                    genres_copy.remove(key_word)
-            for key_word in awards_copy:
-                distance = Levenshtein.distance(word,key_word)
-                if distance == 0:
-                    relevancy_score += 5
-                    awards_copy.remove(key_word)
-                elif distance <= 3:
-                    relevancy_score += 2
-                    awards_copy.remove(key_word)
+        # for word in query:
+        #     for key_word in key_word_copy:
+        #         # Gets relative string difference with 1 point for every difference (capitalization, letter distance, etc.)
+        #         distance = Levenshtein.distance(word,key_word)
+        #         if distance == 0:
+        #             relevancy_score += 10
+        #             key_word_copy.remove(key_word)
+        #         elif distance <= 3:
+        #             relevancy_score += 5
+        #             key_word_copy.remove(key_word)
+        #     for key_word in genres_copy:
+        #         distance = Levenshtein.distance(word,key_word)
+        #         if distance == 0:
+        #             relevancy_score += 5
+        #             genres_copy.remove(key_word)
+        #         elif distance <= 3:
+        #             relevancy_score += 2
+        #             genres_copy.remove(key_word)
+        #     for key_word in awards_copy:
+        #         distance = Levenshtein.distance(word,key_word)
+        #         if distance == 0:
+        #             relevancy_score += 5
+        #             awards_copy.remove(key_word)
+        #         elif distance <= 3:
+        #             relevancy_score += 2
+        #             awards_copy.remove(key_word)
         page_genre = ""
         genres = normalized_genres.get("genres")
         if len(genres) < 8:
@@ -541,22 +540,22 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
             image_link = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png'
 
         #Score
-        if wiki_description:
-            book_vector = unweighted_vector_embedding(wiki_description)
-            vector_score = query_vector.similarity(book_vector)            
-            vector_score *= 100      
-        else:
-            book_vector = unweighted_vector_embedding(google_description)
-            vector_score = query_vector.similarity(book_vector)            
-            vector_score *= 80
+        # if wiki_description:
+        #     book_vector = unweighted_vector_embedding(wiki_description)
+        #     vector_score = query_vector.similarity(book_vector)            
+        #     vector_score *= 100      
+        # else:
+        #     book_vector = unweighted_vector_embedding(google_description)
+        #     vector_score = query_vector.similarity(book_vector)            
+        #     vector_score *= 80
 
-        relevancy_score += vector_score
+        # relevancy_score += vector_score
 
 
-        books.append({"title":title,"google_description": google_description, "wiki_description": wiki_description,"image_link" :image_link, "isbn": isbn, "authors":authors, "buy_link":buy_link,"score":relevancy_score, "genres": page_genre})   
+        books.append({"title":title,"google_description": google_description,"image_link" :image_link, "isbn": isbn, "authors":authors, "buy_link":buy_link,"score":relevancy_score, "genres": page_genre})   
     top_google = {"title" : books[0].get("title"), "description" : books[0].get("google_description"),"image_link": books[0].get("image_link"), "isbn":books[0].get("isbn"), "authors":books[0].get("authors"),"buy_link":books[0].get("buy_link"),"score":books[0].get("score"),"genres":books[0].get("genres")}
     sorted_books = sorted(books, key=lambda x: x['score'], reverse=True)
-    sorted_books = sorted_books[:result_top_k+1]
+    sorted_books = books[:result_top_k+1]
 
     final_result = []
     increm = 0

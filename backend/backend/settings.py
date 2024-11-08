@@ -28,7 +28,7 @@ load_dotenv(dotenv_path=dotenv_path, override=True)
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['leadtheread.com','127.0.0.1']
 
