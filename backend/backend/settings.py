@@ -28,9 +28,9 @@ load_dotenv(dotenv_path=dotenv_path, override=True)
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['leadtheread.com']
+ALLOWED_HOSTS = ['leadtheread.com','127.0.0.1']
 
 
 # Application definition
@@ -145,6 +145,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
 STATIC_ROOT = '/home/ubuntu/leadtheread/backend/staticfiles/'
 
 # Default primary key field type

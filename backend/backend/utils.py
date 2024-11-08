@@ -481,7 +481,9 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
 
         # Returns key words from openlibrary
         relevancy_score = item.get("volumeInfo").get("score")
-        key_words = openlibrary_keys(isbn)
+        # key_words = openlibrary_keys(isbn)
+        #while internet archive is down, ignore open library
+        key_words = {"subjects":[],"key_words":[],"fiction":[],"found":[]}
         # if the book doesn't exist on open books punish
         if not key_words.get("found"):
             relevancy_score -= 10
@@ -570,4 +572,4 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     return final_result  
 
 if __name__=="__main__":
-    print(search_books_isbn("9781439550410"))
+    print(deep_search_books("Magic boy goes on adventures at hogwarts",10,10,1))

@@ -18,6 +18,7 @@ cymem==2.0.8
 datasketch==1.6.5
 Django==5.0.7
 django-ses==4.1.0
+dotenv==0.0.5
 en-core-web-md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.7.1/en_core_web_md-3.7.1-py3-none-any.whl#sha256=6a0f857a2b4d219c6fa17d455f82430b365bf53171a2d919b9376e5dc9be032e
 filelock==3.15.4
 fsspec==2024.6.1
@@ -61,7 +62,6 @@ s3transfer==0.10.2
 safetensors==0.4.4
 scikit-learn==1.5.1
 scipy==1.14.0
-sentence-transformers==3.0.1
 shellingham==1.5.4
 six==1.16.0
 smart-open==6.4.0
@@ -70,7 +70,6 @@ spacy==3.7.6
 spacy-curated-transformers==0.2.2
 spacy-legacy==3.0.12
 spacy-loggers==1.0.5
-spacy_sentence_bert==0.1.2
 sqlparse==0.5.1
 srsly==2.4.8
 sympy==1.13.2
@@ -80,7 +79,6 @@ threadpoolctl==3.5.0
 tokenizers==0.19.1
 torch==2.4.0
 tqdm==4.66.4
-transformers==4.44.2
 typer==0.3.2
 typing_extensions==4.12.2
 tzdata==2024.1
