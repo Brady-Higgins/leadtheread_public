@@ -389,7 +389,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         pos_terms = 3
     else:
         pos_terms = len(pos)
-    search_items = 30 - (pos_terms * 5) 
+    search_items = 24 - (pos_terms * 3) 
     google_books = search_books_by_query(query,search_items)    
     
     if google_books == None:
@@ -412,7 +412,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
                     titles.append(item.get('volumeInfo').get('title'))
         all_key_query += key + " "
         i+=1
-    book_search_on_key = search_books_by_query(all_key_query,5)
+    book_search_on_key = search_books_by_query(all_key_query,4)
     for item in book_search_on_key.get('items', []):
                 if item.get('volumeInfo').get('title') not in titles:
                     item.get("volumeInfo")["score"] = 0
@@ -481,13 +481,15 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
 
         # Returns key words from openlibrary
         relevancy_score = item.get("volumeInfo").get("score")
-        key_words = openlibrary_keys(isbn)
+        #key_words = openlibrary_keys(isbn)
+	#while internet archive is down, ignore open library
+        key_words = {"subjects":[],"key_words":[],"fiction":[],"found":True}
         # if the book doesn't exist on open books punish
         if not key_words.get("found"):
             relevancy_score -= 10
         #check if fiction is in key else remove book
-        if key_words.get("fiction") != fiction and key_words.get("found"):
-            continue
+        #if key_words.get("fiction") != fiction and key_words.get("found"):
+           # continue
         #check for matching key words such as character names
         normalized_genres = genre_generics(key_words.get("subjects"))
 
