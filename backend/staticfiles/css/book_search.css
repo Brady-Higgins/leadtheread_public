@@ -1,0 +1,143 @@
+
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+    color: #333;
+    text-decoration: underline;
+    font-size: 1.5em;
+}
+
+.book {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.book img {
+    max-width: 150px;
+    margin-right: 40px;
+}
+
+.book-details {
+    text-align: left;
+    font-size: large;
+    width: calc(100% - 190px); /* Adjusting width considering image width and margin */
+}
+
+.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.book-title {
+    flex-grow: 1;
+    font-size: xx-large;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.like-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 34px;
+    display: flex;
+    align-items: center;
+    font-weight: 100;
+}
+
+
+.like-button .star:hover {
+    color: gold;
+}
+
+
+.like-button .star {
+    color: #ccc; 
+    transition: color 0.3s;
+}
+.like-button .star.liked {
+    color: gold;
+}
+
+.book-authors, .book-description, .book-isbn {
+    margin-bottom: 5px;
+}
+
+.book-authors {
+    text-decoration: underline;
+}
+
+span {
+    font-weight:300;
+}
+@media (max-width: 580px) {
+    .book {
+        flex-direction: column; /* Stack image and details vertically */
+        align-items: center; /* Center align the items */
+        width: 100%; /* Ensure the book container takes full width */
+        padding: 10px; /* Adjust padding for smaller screens */
+    }
+
+    .book img {
+        max-width: 100px; /* Reduce the image size on mobile */
+        margin-bottom: 10px; /* Add space below the image */
+    }
+
+    .book-details {
+        width: 100%; /* Full width for book details */
+        text-align: left; /* Align text to the left */
+        font-size: large; /* Adjust font size for readability */
+    }
+
+    .top {
+        width: 100%; /* Ensure the top section takes full width */
+        display: flex;
+        flex-direction: column; /* Stack title and like button */
+        align-items: flex-start; /* Align items to the left */
+    }
+
+    .book-title {
+        font-size: 1.5em; /* Adjust font size */
+        margin-bottom: 10px; /* Add margin below the title */
+    }
+
+    .like-button {
+        font-size: 24px; /* Adjust the size of the like button */
+        margin-top: 10px; /* Add margin above the like button */
+        align-self: flex-start; /* Align the like button to the left */
+    }
+
+    .book-authors, .book-description, .book-isbn, .book-genres {
+        text-align: left; /* Align text elements to the left */
+        font-size: small; /* Adjust font size for readability */
+    }
+
+    .book-description {
+        overflow-wrap: break-word; /* Ensure long descriptions break and wrap */
+        margin-top: 10px; /* Add space above the description */
+    }
+
+    .container {
+        padding: 10px; /* Adjust container padding */
+    }
+}
+

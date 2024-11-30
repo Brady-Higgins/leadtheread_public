@@ -384,6 +384,9 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     3. Returns top 5 most relevant results
     '''
 
+    if not query.strip():
+    	return [{"title":"Invalid Query"}]
+
     # check vector db for most similar plot to query relation
     client = init_openai()
     index = init_pinecone()
@@ -416,9 +419,9 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         else:
             #Give big boost
             for val in google_books:
-                title = val[0].get('volumeInfo', {}).get("title")
+                title = val.get('volumeInfo', {}).get("title")
                 if title == item[0].get("volumeInfo").get("title"):
-                    val[0].get("volumeInfo")["score"] = 20 
+                    val.get("volumeInfo")["score"] = 20 
     
     for book in db_res:
         if book.get("score") < .65:
@@ -547,7 +550,6 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
 
 
 def init_pinecone():
-    load_dotenv()
     pinecone_key = os.getenv("PINECONE_KEY")
     pc = Pinecone(api_key=pinecone_key)
     index = pc.Index("leadtheread")
@@ -576,7 +578,6 @@ def query_db(index,q,client):
     return condensed_resp
 
 def init_openai():
-    load_dotenv()
     openai_key = os.getenv("OPENAI_KEY")
     client = OpenAI(api_key=openai_key)
     return client
