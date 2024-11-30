@@ -19,6 +19,10 @@ from itertools import product
 from sklearn.decomposition import TruncatedSVD
 from datasketch import MinHash, MinHashLSH
 
+#vector db
+from openai import OpenAI
+from pinecone import Pinecone
+
 def search_books_isbn(isbn):
     base_url = "https://www.googleapis.com/books/v1/volumes" 
     current_directory = Path.cwd()
@@ -379,55 +383,26 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     5. Embeds then perform a simliarity search on the list of books and wiki summaries to the query
     3. Returns top 5 most relevant results
     '''
-    # Key Word isolation
-    
 
-    # Extract book titles, descriptions, and image link from the results
-    # Add the plot summary from wiki
-    pos = extract(query)
-    if len(pos) > 3:
-        pos_terms = 3
-    else:
-        pos_terms = len(pos)
-    search_items = 30 - (pos_terms * 5) 
-    google_books = search_books_by_query(query,search_items)    
-    
+    # check vector db for most similar plot to query relation
+    client = init_openai()
+    index = init_pinecone()
+    db_res = query_db(index,query,client)
+    db_res.reverse()
+    db_num = len(db_res) if db_res else 0
+
+    google_books = search_books_by_query(query,15-db_num)
+    google_books = google_books.get('items',[]) 
     if google_books == None:
         return [{"title": "Error Retrieving Books"}]
-    google_books = google_books.get('items',[])
+    
     titles = []
-    for item in google_books:        
+    for item in google_books:       
         titles.append(item.get('volumeInfo').get('title'))
         item.get("volumeInfo")["score"] = 0
     
-    i = 0
-    all_key_query = ""
-    for key in pos:
-        if i < 1:
-            book_search_on_key = search_books_by_query(key,10)
-            for item in book_search_on_key.get('items', []):
-                if item.get('volumeInfo').get('title') not in titles:
-                    item.get("volumeInfo")["score"] = 0
-                    google_books.append(item)
-                    titles.append(item.get('volumeInfo').get('title'))
-        all_key_query += key + " "
-        i+=1
-    book_search_on_key = search_books_by_query(all_key_query,5)
-    for item in book_search_on_key.get('items', []):
-                if item.get('volumeInfo').get('title') not in titles:
-                    item.get("volumeInfo")["score"] = 0
-                    google_books.append(item)
-                    titles.append(item.get('volumeInfo').get('title'))
     books = []
-    # Criteria to be added to search
-    # 1. Book must contain an ISBN
-    # 2. Book must exist in the openlibrary database
-    # 3. Book must match fiction/nonfiction search criteria
-    i = 0
-    # Get vector score, add word matches to score, add award score, ask user about key words
 
-    # Get minhash similiar books
-    # query_vector = unweighted_vector_embedding(query)
     similiar_query_successes = search_minhash(query)
     for isbn in similiar_query_successes:
         book = search_books_isbn(isbn)
@@ -435,18 +410,46 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
             continue
         item = book.get("items")
         if item[0].get("volumeInfo").get("title") not in titles:
-            item[0].get("volumeInfo")["score"] = 0
+            item[0].get("volumeInfo")["score"] = 20
             google_books.append(item[0])
+            titles.append(item[0].get("volumeInfo").get("title"))
         else:
             #Give big boost
-            for item in google_books:
-                title = item.get('volumeInfo', {}).get("title")
-                item.get("volumeInfo")["score"] = 30 
-        # title = openlibrary_search_isbn(isbn)
+            for val in google_books:
+                title = val[0].get('volumeInfo', {}).get("title")
+                if title == item[0].get("volumeInfo").get("title"):
+                    val[0].get("volumeInfo")["score"] = 20 
     
+    for book in db_res:
+        if book.get("score") < .65:
+            continue
+        isbn = book.get("ISBN")
+        title = book.get("title")
+        if isbn == "None":
+            full_db_res = search_books_by_query(title,1)
+        else:
+            full_db_res = search_books_isbn(isbn)
+        if full_db_res.get("totalItems") == 0:
+            if isbn != "None":
+                full_db_res = search_books_by_query(title,1)
+                if full_db_res.get("totalItems") == 0:
+                    continue
+            else:
+                continue    
+        #favor books found via vectordb
+        full_db_res = full_db_res.get("items",None)
+        if full_db_res[0].get("volumeInfo").get("title") in titles:
+            for book in google_books:
+                bk_title = book.get('volumeInfo', {}).get("title")
+                if bk_title == full_db_res[0].get("volumeInfo").get("title"):
+                    book.get("volumeInfo")["score"] = 30 
+        else:
+            full_db_res[0].get("volumeInfo")['score'] = 20
+            google_books.append(full_db_res[0])      
 
     for item in google_books:       
         volume_info = item.get('volumeInfo', {})
+    
         industry_identifier = volume_info.get('industryIdentifiers', 'No ISBN Listed')
         id_type = "None"
         isbn = '123456789'
@@ -465,7 +468,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         if id_type == "None":
             continue
         title = volume_info.get('title', 'No title')
-        
+        #google books API for some reason reccomends these a bunch
         if title=="CannaCorn" or title == "Psychic Self-defense":
             continue
         authors_info = volume_info.get('authors', 'Unknown Author')
@@ -475,52 +478,50 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         authors = authors[:-1]
         google_description = volume_info.get('description', 'No description available')
 
-        # Returns wiki description based on title 
-        # wiki_description = get_wiki_plot(title,0,0)
-
         # Returns key words from openlibrary
-        relevancy_score = item.get("volumeInfo").get("score")
-        # key_words = openlibrary_keys(isbn)
-        #while internet archive is down, ignore open library
-        key_words = {"subjects":[],"key_words":[],"fiction":[],"found":[]}
+        relevancy_score = volume_info.get("score")
+
+        # Remove if internet archive goes down again soon
+        key_words = openlibrary_keys(isbn)
         # if the book doesn't exist on open books punish
-        if not key_words.get("found"):
-            relevancy_score -= 10
+        # if not key_words.get("found"):
+        #     relevancy_score -= 10
         #check if fiction is in key else remove book
-        if key_words.get("fiction") != fiction and key_words.get("found"):
-            continue
+        # if key_words.get("fiction") != fiction and key_words.get("found"):
+        #     continue
         #check for matching key words such as character names
         normalized_genres = genre_generics(key_words.get("subjects"))
 
+        # key word search in 
         key_word_copy = key_words.get("key_words").copy()
         genres_copy = normalized_genres.get("genres").copy()
         awards_copy = normalized_genres.get("awards").copy()
-        # for word in query:
-        #     for key_word in key_word_copy:
-        #         # Gets relative string difference with 1 point for every difference (capitalization, letter distance, etc.)
-        #         distance = Levenshtein.distance(word,key_word)
-        #         if distance == 0:
-        #             relevancy_score += 10
-        #             key_word_copy.remove(key_word)
-        #         elif distance <= 3:
-        #             relevancy_score += 5
-        #             key_word_copy.remove(key_word)
-        #     for key_word in genres_copy:
-        #         distance = Levenshtein.distance(word,key_word)
-        #         if distance == 0:
-        #             relevancy_score += 5
-        #             genres_copy.remove(key_word)
-        #         elif distance <= 3:
-        #             relevancy_score += 2
-        #             genres_copy.remove(key_word)
-        #     for key_word in awards_copy:
-        #         distance = Levenshtein.distance(word,key_word)
-        #         if distance == 0:
-        #             relevancy_score += 5
-        #             awards_copy.remove(key_word)
-        #         elif distance <= 3:
-        #             relevancy_score += 2
-        #             awards_copy.remove(key_word)
+        for word in query:
+            for key_word in key_word_copy:
+                # Gets relative string difference with 1 point for every difference (capitalization, letter distance, etc.)
+                distance = Levenshtein.distance(word,key_word)
+                if distance == 0:
+                    relevancy_score += 10
+                    key_word_copy.remove(key_word)
+                elif distance <= 3:
+                    relevancy_score += 5
+                    key_word_copy.remove(key_word)
+            for key_word in genres_copy:
+                distance = Levenshtein.distance(word,key_word)
+                if distance == 0:
+                    relevancy_score += 5
+                    genres_copy.remove(key_word)
+                elif distance <= 3:
+                    relevancy_score += 2
+                    genres_copy.remove(key_word)
+            for key_word in awards_copy:
+                distance = Levenshtein.distance(word,key_word)
+                if distance == 0:
+                    relevancy_score += 5
+                    awards_copy.remove(key_word)
+                elif distance <= 3:
+                    relevancy_score += 2
+                    awards_copy.remove(key_word)
         page_genre = ""
         genres = normalized_genres.get("genres")
         if len(genres) < 8:
@@ -538,37 +539,49 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
             image_link = images.get('smallThumbnail')
         else:
             image_link = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png'
-
-        #Score
-        # if wiki_description:
-        #     book_vector = unweighted_vector_embedding(wiki_description)
-        #     vector_score = query_vector.similarity(book_vector)            
-        #     vector_score *= 100      
-        # else:
-        #     book_vector = unweighted_vector_embedding(google_description)
-        #     vector_score = query_vector.similarity(book_vector)            
-        #     vector_score *= 80
-
-        # relevancy_score += vector_score
-
-
-        books.append({"title":title,"google_description": google_description,"image_link" :image_link, "isbn": isbn, "authors":authors, "buy_link":buy_link,"score":relevancy_score, "genres": page_genre})   
-    top_google = {"title" : books[0].get("title"), "description" : books[0].get("google_description"),"image_link": books[0].get("image_link"), "isbn":books[0].get("isbn"), "authors":books[0].get("authors"),"buy_link":books[0].get("buy_link"),"score":books[0].get("score"),"genres":books[0].get("genres")}
+        books.append({"title":title,"description": google_description,"image_link" :image_link, "isbn": isbn, "authors":authors, "buy_link":buy_link,"score":relevancy_score, "genres": page_genre})   
+    # top_google = {"title" : books[0].get("title"), "description" : books[0].get("google_description"),"image_link": books[0].get("image_link"), "isbn":books[0].get("isbn"), "authors":books[0].get("authors"),"buy_link":books[0].get("buy_link"),"score":books[0].get("score"),"genres":books[0].get("genres")}
     sorted_books = sorted(books, key=lambda x: x['score'], reverse=True)
-    sorted_books = books[:result_top_k+1]
+    return sorted_books[:result_top_k+1] 
 
-    final_result = []
-    increm = 0
-    for book in sorted_books:
-        if increm == 2:
-            final_result.append(top_google)
-            increm +=1
-        elif book.get("title") == top_google.get("title"):
-            pass
-        else:
-            final_result.append({"title" : book.get("title"), "description" : book.get("google_description"), "image_link": book.get("image_link"), "isbn":book.get("isbn"), "authors": book.get("authors"),"buy_link": book.get("buy_link"),"genres": book.get("genres")})
-            increm +=1    
-    return final_result  
+
+
+def init_pinecone():
+    load_dotenv()
+    pinecone_key = os.getenv("PINECONE_KEY")
+    pc = Pinecone(api_key=pinecone_key)
+    index = pc.Index("leadtheread")
+    time.sleep(1)
+    return index 
+
+# Access Vector Database with embedded plots
+def embed(text, client):
+    response = client.embeddings.create(
+    input=text,
+    model="text-embedding-ada-002"
+    )
+    return response.data[0].embedding
+
+def query_db(index,q,client):
+    query_vector = embed(q,client)
+    resp = index.query(
+        vector = query_vector,
+        top_k = 2,
+        include_metadata=True
+    )
+    condensed_resp = []
+    for r in resp.get("matches"):
+        meta = r.get("metadata")
+        condensed_resp.append({"title":meta.get("title"),"ISBN":meta.get("ISBN"), "score":r.get("score")})
+    return condensed_resp
+
+def init_openai():
+    load_dotenv()
+    openai_key = os.getenv("OPENAI_KEY")
+    client = OpenAI(api_key=openai_key)
+    return client
+
 
 if __name__=="__main__":
-    print(deep_search_books("Magic boy goes on adventures at hogwarts",10,10,1))
+    print(deep_search_books("Magic boy goes to hogwarts",10,10,1))
+    

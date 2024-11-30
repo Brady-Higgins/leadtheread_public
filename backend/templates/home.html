@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
 {% endblock %}
 {% block content %}
-    <h1>We Lead the Read!</h1>
-    <h2>Can't remember the title of a book you read, or have a specific plot in mind? <br>
+    <h1>Fiction Plot Search Engine</h1>
+    <h2>Can't remember the title of a fiction book you read, or have a specific plot in mind? <br>
         Just describe the plot below, and we'll help you find the book that best matches your description!<br>
-        <span class="wait-text">Good things take a while, expect a 2 minute wait...</span>
+        <span class="wait-text"></span>
     </h2>
     <div class="search">
         <form id="search-form" method="get" action="{% url 'book_search' %}">
