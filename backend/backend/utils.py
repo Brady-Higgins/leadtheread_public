@@ -367,7 +367,7 @@ def search_minhash(query):
     return similar_results
 
 def init_minhash():
-    lsh = MinHashLSH(threshold=0.25, num_perm=100)
+    lsh = MinHashLSH(threshold=0.55, num_perm=100)
     potter_shingle = shingle("the magic boy Harry Potter and his friends go to hogwarts and fight voldemort.")
     potter_minhash = create_minhash(potter_shingle)
     lsh.insert("9780545790352",potter_minhash,check_duplication=False)
@@ -383,15 +383,11 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     5. Embeds then perform a simliarity search on the list of books and wiki summaries to the query
     3. Returns top 5 most relevant results
     '''
-
     if not query.strip():
-    	return [{"title":"Invalid Query"}]
-
-    # check vector db for most similar plot to query relation
+        return [{"title":"Invalid Query"}]
     client = init_openai()
     index = init_pinecone()
     db_res = query_db(index,query,client)
-    db_res.reverse()
     db_num = len(db_res) if db_res else 0
 
     google_books = search_books_by_query(query,15-db_num)
@@ -403,7 +399,6 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
     for item in google_books:       
         titles.append(item.get('volumeInfo').get('title'))
         item.get("volumeInfo")["score"] = 0
-    
     books = []
 
     similiar_query_successes = search_minhash(query)
@@ -413,7 +408,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
             continue
         item = book.get("items")
         if item[0].get("volumeInfo").get("title") not in titles:
-            item[0].get("volumeInfo")["score"] = 20
+            item[0].get("volumeInfo")["score"] = 15
             google_books.append(item[0])
             titles.append(item[0].get("volumeInfo").get("title"))
         else:
@@ -421,17 +416,14 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
             for val in google_books:
                 title = val.get('volumeInfo', {}).get("title")
                 if title == item[0].get("volumeInfo").get("title"):
-                    val.get("volumeInfo")["score"] = 20 
+                    val.get("volumeInfo")["score"] = 15 
     
     for book in db_res:
         if book.get("score") < .65:
             continue
         isbn = book.get("ISBN")
         title = book.get("title")
-        if isbn == "None":
-            full_db_res = search_books_by_query(title,1)
-        else:
-            full_db_res = search_books_isbn(isbn)
+        full_db_res = search_books_by_query(title,1)
         if full_db_res.get("totalItems") == 0:
             if isbn != "None":
                 full_db_res = search_books_by_query(title,1)
@@ -441,13 +433,15 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
                 continue    
         #favor books found via vectordb
         full_db_res = full_db_res.get("items",None)
-        if full_db_res[0].get("volumeInfo").get("title") in titles:
+        db_res_title = full_db_res[0].get("volumeInfo").get("title").lower().strip()
+        lower_titles = [title.lower().strip() for title in titles]
+        if db_res_title in lower_titles:
             for book in google_books:
-                bk_title = book.get('volumeInfo', {}).get("title")
-                if bk_title == full_db_res[0].get("volumeInfo").get("title"):
+                bk_title = book.get('volumeInfo', {}).get("title").lower().strip()
+                if bk_title == full_db_res[0].get("volumeInfo").get("title").lower().strip():
                     book.get("volumeInfo")["score"] = 30 
         else:
-            full_db_res[0].get("volumeInfo")['score'] = 20
+            full_db_res[0].get("volumeInfo")['score'] = 15
             google_books.append(full_db_res[0])      
 
     for item in google_books:       
@@ -584,5 +578,5 @@ def init_openai():
 
 
 if __name__=="__main__":
-    print(deep_search_books("Magic boy goes to hogwarts",10,10,1))
+    print(deep_search_books("during this big war, with this nurse and this soldier falling in love amidst all the chaos.",10,10,1))
     
