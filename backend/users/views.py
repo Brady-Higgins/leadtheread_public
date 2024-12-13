@@ -203,6 +203,8 @@ def toggle_book(request):
             liked = False
         else:
             # Book is being liked
+            genres = utils.get_book_genres(isbn)
+            book.genres = genres
             book.users.add(request.user)
             liked = True
 

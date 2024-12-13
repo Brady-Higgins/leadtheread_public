@@ -373,6 +373,22 @@ def init_minhash():
     lsh.insert("9780545790352",potter_minhash,check_duplication=False)
     save_minhash(lsh)
 
+def get_book_genres(isbn):
+    key_words = openlibrary_keys(isbn)
+    normalized_genres = genre_generics(key_words.get("subjects"))
+    page_genre = ""
+    genres = normalized_genres.get("genres")
+    if len(genres) < 8:
+        page_genre = ", ".join(genres)
+    else:
+        page_genre = ", ".join(genres[:7])
+    for award in normalized_genres.get("awards"):
+        page_genre += award + ","
+    if page_genre.endswith(", "):
+        page_genre = page_genre[:-1]
+    page_genre = "Genres: " + page_genre
+    return page_genre
+
 # Plot Vectorization with Crude Search Ranking Algorithm (PVCSRA)
 def deep_search_books(query,vector_top_k,result_top_k,fiction):
     '''
@@ -479,7 +495,7 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         relevancy_score = volume_info.get("score")
 
         # Remove if internet archive goes down again soon
-        key_words = openlibrary_keys(isbn)
+        # key_words = openlibrary_keys(isbn)
         # if the book doesn't exist on open books punish
         # if not key_words.get("found"):
         #     relevancy_score -= 10
@@ -487,48 +503,48 @@ def deep_search_books(query,vector_top_k,result_top_k,fiction):
         # if key_words.get("fiction") != fiction and key_words.get("found"):
         #     continue
         #check for matching key words such as character names
-        normalized_genres = genre_generics(key_words.get("subjects"))
+        # normalized_genres = genre_generics(key_words.get("subjects"))
 
         # key word search in 
-        key_word_copy = key_words.get("key_words").copy()
-        genres_copy = normalized_genres.get("genres").copy()
-        awards_copy = normalized_genres.get("awards").copy()
-        for word in query:
-            for key_word in key_word_copy:
-                # Gets relative string difference with 1 point for every difference (capitalization, letter distance, etc.)
-                distance = Levenshtein.distance(word,key_word)
-                if distance == 0:
-                    relevancy_score += 10
-                    key_word_copy.remove(key_word)
-                elif distance <= 3:
-                    relevancy_score += 5
-                    key_word_copy.remove(key_word)
-            for key_word in genres_copy:
-                distance = Levenshtein.distance(word,key_word)
-                if distance == 0:
-                    relevancy_score += 5
-                    genres_copy.remove(key_word)
-                elif distance <= 3:
-                    relevancy_score += 2
-                    genres_copy.remove(key_word)
-            for key_word in awards_copy:
-                distance = Levenshtein.distance(word,key_word)
-                if distance == 0:
-                    relevancy_score += 5
-                    awards_copy.remove(key_word)
-                elif distance <= 3:
-                    relevancy_score += 2
-                    awards_copy.remove(key_word)
+        # key_word_copy = key_words.get("key_words").copy()
+        # genres_copy = normalized_genres.get("genres").copy()
+        # awards_copy = normalized_genres.get("awards").copy()
+        # for word in query:
+        #     for key_word in key_word_copy:
+        #         # Gets relative string difference with 1 point for every difference (capitalization, letter distance, etc.)
+        #         distance = Levenshtein.distance(word,key_word)
+        #         if distance == 0:
+        #             relevancy_score += 10
+        #             key_word_copy.remove(key_word)
+        #         elif distance <= 3:
+        #             relevancy_score += 5
+        #             key_word_copy.remove(key_word)
+        #     for key_word in genres_copy:
+        #         distance = Levenshtein.distance(word,key_word)
+        #         if distance == 0:
+        #             relevancy_score += 5
+        #             genres_copy.remove(key_word)
+        #         elif distance <= 3:
+        #             relevancy_score += 2
+        #             genres_copy.remove(key_word)
+        #     for key_word in awards_copy:
+        #         distance = Levenshtein.distance(word,key_word)
+        #         if distance == 0:
+        #             relevancy_score += 5
+        #             awards_copy.remove(key_word)
+        #         elif distance <= 3:
+        #             relevancy_score += 2
+        #             awards_copy.remove(key_word)
         page_genre = ""
-        genres = normalized_genres.get("genres")
-        if len(genres) < 8:
-            page_genre = ", ".join(genres)
-        else:
-            page_genre = ", ".join(genres[:7])
-        for award in normalized_genres.get("awards"):
-            page_genre += award + ","
-        if page_genre.endswith(", "):
-            page_genre = page_genre[:-1]
+        # genres = normalized_genres.get("genres")
+        # if len(genres) < 8:
+        #     page_genre = ", ".join(genres)
+        # else:
+        #     page_genre = ", ".join(genres[:7])
+        # for award in normalized_genres.get("awards"):
+        #     page_genre += award + ","
+        # if page_genre.endswith(", "):
+        #     page_genre = page_genre[:-1]
         page_genre = "Genres: " + page_genre
         images = volume_info.get('imageLinks', 'No image link')
         buy_link = volume_info.get("canonicalVolumeLink", "https://books.google.com/" )
@@ -562,7 +578,7 @@ def query_db(index,q,client):
     query_vector = embed(q,client)
     resp = index.query(
         vector = query_vector,
-        top_k = 2,
+        top_k = 3,
         include_metadata=True
     )
     condensed_resp = []
