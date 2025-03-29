@@ -1,10 +1,11 @@
-Leadtheread is my attempt to solve the issue of forgetting the title of a book you read in the past.
-https://leadtheread.com
+Leadtheread is a plot search engine with CRUD and security implementations. It's made so users can upload what they remember of a plot, and find that book title that was on the tip of their tongue. The ranking algorithm is briefly described below in the form of a diagram. The frontend is implemented with Django, the database with MySQL, and the provider is AWS. Includes email based user authentication.
 
-Technical Aspects:
-Built a ranking algorithm utilizing NLP to calculate vector similarity scores between user queries and Wikipedia plots then further improved accuracy by 25% via checking for the presence of keywords, genres, and awards using Open Library data.
-Utilized Locality sensitive hashing to store and search successful query to liked book instances via MinHash for continual ranking algorithm improvement and abundance.
-Deployed the site on AWS, integrated with a MySQL database, and implemented the backend using Javascript and Django, featuring CSRF protection, email authentication, and email based password reset functionalities.
+Ranking Algorithm Specs:
+user query -> embed to word vector -> cos similiarity in vector DB -> top 5 similarity score books ----------|
+           |                                                                                                 |
+           -> Shingle query -> Locality Sensitive Hashing (LSH) with Minhash -> any 90% previous matches ----|
+	         |                                                                                                 |
+           -> Pull keywords -> Search open library for any keyword matches -> increase book score -----------|
+                                                                                                             |
+                                                                                                   Results <--
 
-Current Issues:
-As Internet Archive is down, search accuracy is also decreased as leadtheread uses the Open Library API
