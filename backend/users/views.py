@@ -39,7 +39,7 @@ def send_confirmation_email(request, user):
     activation_link = request.build_absolute_uri(
         reverse("users:activate", kwargs={"uidb64": uid, "token": token})
     )
-    subject = "Activate Your Leadtheread Account"
+    subject = "Activate Your Plotsearcher Account"
     message = f"Hi {user.name},\n\nPlease click the link below to activate your account:\n\n{activation_link}"
     send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
 

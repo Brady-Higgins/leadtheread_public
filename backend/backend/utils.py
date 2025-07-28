@@ -145,7 +145,7 @@ def unweighted_vector_embedding(text):
     return doc
 
 def get_wiki_plot(title,search_index,reductions_applied):
-    wiki = wikipediaapi.Wikipedia(user_agent="LeadTheRead/0.0 (http://leadtheread.com; leadtheread@gmail.com)")
+    wiki = wikipediaapi.Wikipedia(user_agent="PlotSearcher/0.0 (http://plotsearcher.com; leadtheread@gmail.com)")
     title = clean_title(title)
     search_results = wikipedia.search(title + "(book)")
 
